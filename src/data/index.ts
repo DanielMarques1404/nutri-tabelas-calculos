@@ -1,6 +1,6 @@
 export const pages: string[] = ["Estatura", "FAO"];
 
-type RecomendacoesType = {
+export type RecomendacoesType = {
   id: number;
   faixaEtariaInicial: number;
   faixaEtariaFinal: number;
@@ -8,7 +8,7 @@ type RecomendacoesType = {
   paraMeninas: number;
 }
 
-export const faoOmsData: RecomendacoesType[] = [
+export const faoOmsMesesData: RecomendacoesType[] = [
   {
     id: 0,
     faixaEtariaInicial: 0,
@@ -74,7 +74,7 @@ export const faoOmsData: RecomendacoesType[] = [
   },
 ]
 
-export const faoData: RecomendacoesType[] = [
+export const faoOmsAnosData: RecomendacoesType[] = [
   {
     id: 0,
     faixaEtariaInicial: 1,
