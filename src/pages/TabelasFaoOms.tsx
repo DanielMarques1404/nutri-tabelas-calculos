@@ -1,14 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
-import { Toggle } from "../components/ui/Toggle";
-import {
-  faoOmsAnosData,
-  faoOmsMesesData,
-  type RecomendacoesType,
-} from "../data";
+import { faoOmsData } from "../data";
 
-type UnidadeIdade = "meses" | "anos";
 type Sexo = "masculino" | "feminino";
 
 const parseNonNegativeNumber = (value: string) =>
@@ -20,29 +14,21 @@ const formatNecessidadeCalorica = (value: number) =>
     maximumFractionDigits: 2,
   });
 
-const findRecomendacao = (idade: number, data: RecomendacoesType[]) => {
-  return data.find((recomendacao, index) => {
-    const isLastRange = index === data.length - 1;
-
-    return (
-      idade >= recomendacao.faixaEtariaInicial &&
-      (idade < recomendacao.faixaEtariaFinal ||
-        (isLastRange && idade === recomendacao.faixaEtariaFinal))
-    );
-  });
-};
-
 export const TabelasFaoOms = () => {
   const [peso, setPeso] = useState<number>(0);
-  const [idade, setIdade] = useState<number>(0);
   const [sexo, setSexo] = useState<Sexo>("masculino");
-  const [unidadeIdade, setUnidadeIdade] = useState<UnidadeIdade>("meses");
-  const recomendacoesData =
-    unidadeIdade === "meses" ? faoOmsMesesData : faoOmsAnosData;
-  const recomendacao = findRecomendacao(idade, recomendacoesData);
-  const fator =
-    sexo === "masculino" ? recomendacao?.paraMeninos : recomendacao?.paraMeninas;
-  const necessidadeCalorica = fator ? peso * fator : 0;
+  const [faixaEtaria, setFaixaEtaria] = useState<number>(0);
+  const [necessidadeCalorica, setNecessidadeCalorica] = useState<number>(0);
+
+  useEffect(() => {
+    const faoOms = faoOmsData[faixaEtaria];
+    setNecessidadeCalorica(
+      peso *
+        (sexo === "masculino"
+          ? (faoOms?.paraMeninos ?? 0)
+          : (faoOms?.paraMeninas ?? 0)),
+    );
+  }, [faixaEtaria,peso, sexo]);
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -50,23 +36,19 @@ export const TabelasFaoOms = () => {
         <h1 className="text-2xl font-bold text-slate-800 text-center">
           Recomendações FAO/OMS
         </h1>
-        <Toggle
-          label="Informe a idade em"
-          options={[
-            { label: "Meses", value: "meses" },
-            { label: "Anos", value: "anos" },
-          ]}
-          value={unidadeIdade}
-          onValueChange={setUnidadeIdade}
-        />
-        <Input
-          label={`Idade (${unidadeIdade})`}
-          type="number"
-          min={0}
-          placeholder="Digite a idade"
-          value={idade}
-          onChange={(e) => setIdade(parseNonNegativeNumber(e.target.value))}
-        />
+
+        <Select
+          label={"Faixa Etária"}
+          value={faixaEtaria}
+          onChange={(e) => setFaixaEtaria(parseInt(e.target.value))}
+        >
+          {faoOmsData.map((recomendacao) => (
+            <option key={recomendacao.id} value={recomendacao.id}>
+              {recomendacao.faixaEtaria}
+            </option>
+          ))}
+        </Select>
+
         <Input
           label="Peso (kg)"
           type="number"
@@ -75,6 +57,7 @@ export const TabelasFaoOms = () => {
           value={peso}
           onChange={(e) => setPeso(parseNonNegativeNumber(e.target.value))}
         />
+
         <Select
           label={"Sexo"}
           value={sexo}
@@ -91,9 +74,15 @@ export const TabelasFaoOms = () => {
           <h1 className="mt-2 text-4xl font-bold text-red-800">
             {formatNecessidadeCalorica(necessidadeCalorica)} kcal
           </h1>
-          {fator ? (
+          {faixaEtaria ? (
             <p className="mt-2 text-sm text-slate-700">
-              Fator aplicado: {fator} kcal/kg para {idade} {unidadeIdade}.
+              {necessidadeCalorica > 0
+                ? `Fator aplicado: ${
+                    sexo === "masculino"
+                      ? faoOmsData[faixaEtaria].paraMeninos
+                      : faoOmsData[faixaEtaria].paraMeninas
+                  } kcal/kg para ${faoOmsData[faixaEtaria].faixaEtaria}.`
+                : "Informe o peso para calcular a necessidade calórica."}
             </p>
           ) : (
             <p className="mt-2 text-sm text-slate-700">
@@ -101,7 +90,6 @@ export const TabelasFaoOms = () => {
             </p>
           )}
         </div>
-
 
         <div className="flex flex-col gap-2 bg-amber-50 p-3 rounded-lg mt-2">
           <span className="text-sm text-slate-700">
