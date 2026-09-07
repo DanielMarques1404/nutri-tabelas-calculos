@@ -1,7 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
-import { faoOmsRecomendacoes, type Sexo } from "../data";
+import { Toggle } from "../components/ui/Toggle";
+import {
+  faoOmsCriticamenteDoentesRecomendacoes,
+  faoOmsRecomendacoes,
+  schofieldCriticamenteDoentesRecomendacoes,
+  type Sexo,
+} from "../data";
+
+type TipoRecomendacao = "fao-oms" | "criticamente-doentes";
+type FormulaCriticamenteDoente = "fao-oms" | "schofield";
 
 const parseNonNegativeNumber = (value: string) =>
   Math.max(parseFloat(value) || 0, 0);
@@ -14,17 +23,38 @@ const formatNecessidadeCalorica = (value: number) =>
 
 export const TabelasFaoOms = () => {
   const [peso, setPeso] = useState<number>(0);
+  const [estatura, setEstatura] = useState<number>(0);
   const [sexo, setSexo] = useState<Sexo>("masculino");
   const [faixaEtaria, setFaixaEtaria] = useState<number>(0);
-  const [necessidadeCalorica, setNecessidadeCalorica] = useState<number>(0);
+  const [tipoRecomendacao, setTipoRecomendacao] =
+    useState<TipoRecomendacao>("fao-oms");
+  const [formulaCriticamenteDoente, setFormulaCriticamenteDoente] =
+    useState<FormulaCriticamenteDoente>("fao-oms");
 
-  useEffect(() => {
-    const faoOms = faoOmsRecomendacoes[faixaEtaria];
-    setNecessidadeCalorica(faoOms?.recomendacao(peso, sexo) ?? 0);
-  }, [faixaEtaria, peso, sexo]);
+  const recomendacoes =
+    tipoRecomendacao === "fao-oms"
+      ? faoOmsRecomendacoes
+      : formulaCriticamenteDoente === "fao-oms"
+        ? faoOmsCriticamenteDoentesRecomendacoes
+        : schofieldCriticamenteDoentesRecomendacoes;
+  const recomendacao = recomendacoes[faixaEtaria];
+  const necessidadeCalorica =
+    recomendacao?.recomendacao(peso, sexo, estatura) ?? 0;
+  const usaSchofield =
+    tipoRecomendacao === "criticamente-doentes" &&
+    formulaCriticamenteDoente === "schofield";
 
-  const fatorAplicado =
-    faoOmsRecomendacoes[faixaEtaria]?.recomendacao(1, sexo) ?? 0;
+  const handleTipoRecomendacaoChange = (value: TipoRecomendacao) => {
+    setTipoRecomendacao(value);
+    setFaixaEtaria(0);
+  };
+
+  const handleFormulaCriticamenteDoenteChange = (
+    value: FormulaCriticamenteDoente,
+  ) => {
+    setFormulaCriticamenteDoente(value);
+    setFaixaEtaria(0);
+  };
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -33,12 +63,34 @@ export const TabelasFaoOms = () => {
           Recomendações FAO/OMS
         </h1>
 
+        <Toggle
+          label="Tipo de recomendação"
+          options={[
+            { label: "Recomendações FAO/OMS", value: "fao-oms" },
+            { label: "Criticamente Doentes", value: "criticamente-doentes" },
+          ]}
+          value={tipoRecomendacao}
+          onValueChange={handleTipoRecomendacaoChange}
+        />
+
+        {tipoRecomendacao === "criticamente-doentes" && (
+          <Toggle
+            label="Fórmula para criticamente doentes"
+            options={[
+              { label: "FAO/OMS", value: "fao-oms" },
+              { label: "Schofield", value: "schofield" },
+            ]}
+            value={formulaCriticamenteDoente}
+            onValueChange={handleFormulaCriticamenteDoenteChange}
+          />
+        )}
+
         <Select
           label={"Faixa Etária"}
           value={faixaEtaria}
           onChange={(e) => setFaixaEtaria(parseInt(e.target.value))}
         >
-          {faoOmsRecomendacoes.map((recomendacao) => (
+          {recomendacoes.map((recomendacao) => (
             <option key={recomendacao.id} value={recomendacao.id}>
               {recomendacao.faixaEtaria}
             </option>
@@ -53,6 +105,17 @@ export const TabelasFaoOms = () => {
           value={peso}
           onChange={(e) => setPeso(parseNonNegativeNumber(e.target.value))}
         />
+
+        {usaSchofield && (
+          <Input
+            label="Estatura (cm)"
+            type="number"
+            min={0}
+            placeholder="Digite a estatura"
+            value={estatura}
+            onChange={(e) => setEstatura(parseNonNegativeNumber(e.target.value))}
+          />
+        )}
 
         <Select
           label={"Sexo"}
@@ -70,11 +133,13 @@ export const TabelasFaoOms = () => {
           <h1 className="mt-2 text-4xl font-bold text-red-800">
             {formatNecessidadeCalorica(necessidadeCalorica)} kcal
           </h1>
-          {faixaEtaria ? (
+          {recomendacao ? (
             <p className="mt-2 text-sm text-slate-700">
               {necessidadeCalorica > 0
-                ? `Fator aplicado: ${fatorAplicado} kcal/kg para ${faoOmsRecomendacoes[faixaEtaria].faixaEtaria}.`
-                : "Informe o peso para calcular a necessidade calórica."}
+                ? `Recomendação aplicada para ${recomendacao?.faixaEtaria}.`
+                : usaSchofield
+                  ? "Informe o peso e a estatura para calcular a necessidade calórica."
+                  : "Informe o peso para calcular a necessidade calórica."}
             </p>
           ) : (
             <p className="mt-2 text-sm text-slate-700">
