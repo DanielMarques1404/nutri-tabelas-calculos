@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
-import { faoOmsData } from "../data";
-
-type Sexo = "masculino" | "feminino";
+import { faoOmsRecomendacoes, type Sexo } from "../data";
 
 const parseNonNegativeNumber = (value: string) =>
   Math.max(parseFloat(value) || 0, 0);
@@ -21,14 +19,12 @@ export const TabelasFaoOms = () => {
   const [necessidadeCalorica, setNecessidadeCalorica] = useState<number>(0);
 
   useEffect(() => {
-    const faoOms = faoOmsData[faixaEtaria];
-    setNecessidadeCalorica(
-      peso *
-        (sexo === "masculino"
-          ? (faoOms?.paraMeninos ?? 0)
-          : (faoOms?.paraMeninas ?? 0)),
-    );
-  }, [faixaEtaria,peso, sexo]);
+    const faoOms = faoOmsRecomendacoes[faixaEtaria];
+    setNecessidadeCalorica(faoOms?.recomendacao(peso, sexo) ?? 0);
+  }, [faixaEtaria, peso, sexo]);
+
+  const fatorAplicado =
+    faoOmsRecomendacoes[faixaEtaria]?.recomendacao(1, sexo) ?? 0;
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -42,7 +38,7 @@ export const TabelasFaoOms = () => {
           value={faixaEtaria}
           onChange={(e) => setFaixaEtaria(parseInt(e.target.value))}
         >
-          {faoOmsData.map((recomendacao) => (
+          {faoOmsRecomendacoes.map((recomendacao) => (
             <option key={recomendacao.id} value={recomendacao.id}>
               {recomendacao.faixaEtaria}
             </option>
@@ -77,11 +73,7 @@ export const TabelasFaoOms = () => {
           {faixaEtaria ? (
             <p className="mt-2 text-sm text-slate-700">
               {necessidadeCalorica > 0
-                ? `Fator aplicado: ${
-                    sexo === "masculino"
-                      ? faoOmsData[faixaEtaria].paraMeninos
-                      : faoOmsData[faixaEtaria].paraMeninas
-                  } kcal/kg para ${faoOmsData[faixaEtaria].faixaEtaria}.`
+                ? `Fator aplicado: ${fatorAplicado} kcal/kg para ${faoOmsRecomendacoes[faixaEtaria].faixaEtaria}.`
                 : "Informe o peso para calcular a necessidade calórica."}
             </p>
           ) : (
