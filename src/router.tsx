@@ -2,12 +2,12 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import { App } from "./App";
 import { CalculoEstaturaEstimada } from "./pages/CalculoEstaturaEstimada";
-import { TabelasFaoOms } from "./pages/TabelasFaoOms";
+import { NecessidadesCaloricas } from "./pages/NecessidadesCaloricas";
 import { appRoutes } from "./routes";
 
 const routeElements = {
   "/calculo-estatura-estimada": <CalculoEstaturaEstimada />,
-  "/tabelas-fao-oms": <TabelasFaoOms />,
+  "/necessidades-caloricas": <NecessidadesCaloricas />,
 };
 
 export const router = createBrowserRouter([

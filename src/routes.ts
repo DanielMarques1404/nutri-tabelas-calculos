@@ -4,7 +4,7 @@ export const appRoutes = [
     label: "Calculo de Estatura Estimada",
   },
   {
-    path: "/tabelas-fao-oms",
-    label: "Tabelas FAO/OMS",
+    path: "/necessidades-caloricas",
+    label: "Necessidades Calóricas Estimadas",
   },
 ] as const;

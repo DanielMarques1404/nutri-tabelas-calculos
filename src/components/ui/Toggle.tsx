@@ -37,7 +37,7 @@ export const Toggle = <T extends string>({
         {options.map((option) => (
           <button
             className={cn(
-              "rounded-md px-4 py-2 text-sm font-medium text-slate-600 transition focus:outline-none focus:ring-2 focus:ring-cyan-500/20",
+              "rounded-md px-4 py-2 text-sm font-medium text-slate-600 transition focus:outline-none focus:ring-2 focus:ring-cyan-500/20 cursor-pointer",
               value === option.value && "bg-white text-slate-950 shadow-sm",
             )}
             key={option.value}

@@ -21,11 +21,11 @@ const formatNecessidadeCalorica = (value: number) =>
     maximumFractionDigits: 2,
   });
 
-export const TabelasFaoOms = () => {
+export const NecessidadesCaloricas = () => {
   const [peso, setPeso] = useState<number>(0);
   const [estatura, setEstatura] = useState<number>(0);
   const [sexo, setSexo] = useState<Sexo>("masculino");
-  const [faixaEtaria, setFaixaEtaria] = useState<number>(0);
+  const [faixaEtaria, setFaixaEtaria] = useState<number | null>(null);
   const [tipoRecomendacao, setTipoRecomendacao] =
     useState<TipoRecomendacao>("fao-oms");
   const [formulaCriticamenteDoente, setFormulaCriticamenteDoente] =
@@ -37,30 +37,37 @@ export const TabelasFaoOms = () => {
       : formulaCriticamenteDoente === "fao-oms"
         ? faoOmsCriticamenteDoentesRecomendacoes
         : schofieldCriticamenteDoentesRecomendacoes;
-  const recomendacao = recomendacoes[faixaEtaria];
+  const recomendacao =
+    faixaEtaria === null ? undefined : recomendacoes[faixaEtaria];
   const necessidadeCalorica =
     recomendacao?.recomendacao(peso, sexo, estatura) ?? 0;
   const usaSchofield =
     tipoRecomendacao === "criticamente-doentes" &&
     formulaCriticamenteDoente === "schofield";
+  const camposFaltando = [
+    faixaEtaria === null ? "faixa etária" : null,
+    peso === 0 ? "peso" : null,
+    usaSchofield && estatura === 0 ? "estatura" : null,
+  ].filter((campo): campo is string => Boolean(campo));
+  const podeCalcular = camposFaltando.length === 0;
 
   const handleTipoRecomendacaoChange = (value: TipoRecomendacao) => {
     setTipoRecomendacao(value);
-    setFaixaEtaria(0);
+    setFaixaEtaria(null);
   };
 
   const handleFormulaCriticamenteDoenteChange = (
     value: FormulaCriticamenteDoente,
   ) => {
     setFormulaCriticamenteDoente(value);
-    setFaixaEtaria(0);
+    setFaixaEtaria(null);
   };
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-4 w-full max-w-lg">
         <h1 className="text-2xl font-bold text-slate-800 text-center">
-          Recomendações FAO/OMS
+          Necessidades Calóricas Estimadas
         </h1>
 
         <Toggle
@@ -87,11 +94,16 @@ export const TabelasFaoOms = () => {
 
         <Select
           label={"Faixa Etária"}
-          value={faixaEtaria}
-          onChange={(e) => setFaixaEtaria(parseInt(e.target.value))}
+          value={faixaEtaria ?? ""}
+          onChange={(e) =>
+            setFaixaEtaria(
+              e.target.value === "" ? null : parseInt(e.target.value),
+            )
+          }
         >
-          {recomendacoes.map((recomendacao) => (
-            <option key={recomendacao.id} value={recomendacao.id}>
+          <option value="">Selecione a faixa etária</option>
+          {recomendacoes.map((recomendacao, index) => (
+            <option key={recomendacao.id} value={index}>
               {recomendacao.faixaEtaria}
             </option>
           ))}
@@ -113,7 +125,9 @@ export const TabelasFaoOms = () => {
             min={0}
             placeholder="Digite a estatura"
             value={estatura}
-            onChange={(e) => setEstatura(parseNonNegativeNumber(e.target.value))}
+            onChange={(e) =>
+              setEstatura(parseNonNegativeNumber(e.target.value))
+            }
           />
         )}
 
@@ -130,20 +144,19 @@ export const TabelasFaoOms = () => {
           <span className="text-sm font-medium text-red-700">
             Necessidade calórica estimada
           </span>
-          <h1 className="mt-2 text-4xl font-bold text-red-800">
-            {formatNecessidadeCalorica(necessidadeCalorica)} kcal
-          </h1>
-          {recomendacao ? (
-            <p className="mt-2 text-sm text-slate-700">
-              {necessidadeCalorica > 0
-                ? `Recomendação aplicada para ${recomendacao?.faixaEtaria}.`
-                : usaSchofield
-                  ? "Informe o peso e a estatura para calcular a necessidade calórica."
-                  : "Informe o peso para calcular a necessidade calórica."}
-            </p>
+          {podeCalcular && recomendacao ? (
+            <>
+              <h1 className="mt-2 text-4xl font-bold text-red-800">
+                {formatNecessidadeCalorica(necessidadeCalorica)} kcal
+              </h1>
+              <p className="mt-2 text-sm text-slate-700">
+                Recomendação aplicada para {recomendacao.faixaEtaria}.
+              </p>
+            </>
           ) : (
             <p className="mt-2 text-sm text-slate-700">
-              Nenhuma faixa etária encontrada para a idade informada.
+              Preencha {camposFaltando.join(", ")} para calcular a necessidade
+              calórica.
             </p>
           )}
         </div>
