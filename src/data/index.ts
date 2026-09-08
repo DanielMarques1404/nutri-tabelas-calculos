@@ -188,13 +188,17 @@ export const schofieldCriticamenteDoentesRecomendacoes: RecomendacoesType[] = [
   {
     id: 1,
     faixaEtaria: "3 a 10 anos",
-    recomendacao: (peso: number, sexo: Sexo) =>
-      sexo === "masculino" ? 22.7 * peso + 495 : 22.5 * peso + 499,
+    recomendacao: (peso: number, sexo: Sexo, estatura = 0) =>
+      sexo === "masculino"
+        ? 19.59 * peso + 1.303 * estatura + 414.9
+        : 16.969 * peso + 1.618 * estatura + 371.2,
   },
   {
     id: 2,
     faixaEtaria: "10 a 18 anos",
-    recomendacao: (peso: number, sexo: Sexo) =>
-      sexo === "masculino" ? 17.5 * peso + 651 : 12.2 * peso + 746,
+    recomendacao: (peso: number, sexo: Sexo, estatura = 0) =>
+      sexo === "masculino"
+        ? 16.25 * peso + 1.372 * estatura + 515.5
+        : 8.365 * peso + 4.65 * estatura + 200,
   },
 ];

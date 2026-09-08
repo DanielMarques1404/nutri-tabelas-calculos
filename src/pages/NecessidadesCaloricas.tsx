@@ -147,7 +147,7 @@ export const NecessidadesCaloricas = () => {
           {podeCalcular && recomendacao ? (
             <>
               <h1 className="mt-2 text-4xl font-bold text-red-800">
-                {formatNecessidadeCalorica(necessidadeCalorica)} kcal
+                {formatNecessidadeCalorica(necessidadeCalorica)} kcal/dia
               </h1>
               <p className="mt-2 text-sm text-slate-700">
                 Recomendação aplicada para {recomendacao.faixaEtaria}.
