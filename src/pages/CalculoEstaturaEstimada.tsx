@@ -9,7 +9,7 @@ const formatEstatura = (value: number) =>
   });
 
 const parseNonNegativeNumber = (value: string) =>
-  Math.max(parseFloat(value) || 0, 0);
+  Math.max(parseFloat(value.replace(",", ".")) || 0, 0);
 
 export const CalculoEstaturaEstimada =() => {
   const [isNeuropata, setIsNeuropata] = useState(false);
@@ -62,6 +62,7 @@ export const CalculoEstaturaEstimada =() => {
           label="AJ (em centímetros)"
           type="number"
           min={0}
+          step="any"
           placeholder="Digite o valor de AJ"
           value={aj}
           onChange={(e) => setAj(parseNonNegativeNumber(e.target.value))}

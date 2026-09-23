@@ -13,7 +13,7 @@ type TipoRecomendacao = "fao-oms" | "criticamente-doentes";
 type FormulaCriticamenteDoente = "fao-oms" | "schofield";
 
 const parseNonNegativeNumber = (value: string) =>
-  Math.max(parseFloat(value) || 0, 0);
+  Math.max(parseFloat(value.replace(",", ".")) || 0, 0);
 
 const formatNecessidadeCalorica = (value: number) =>
   value.toLocaleString("pt-BR", {
@@ -113,6 +113,7 @@ export const NecessidadesCaloricas = () => {
           label="Peso (kg)"
           type="number"
           min={0}
+          step="any"
           placeholder="Digite o peso"
           value={peso}
           onChange={(e) => setPeso(parseNonNegativeNumber(e.target.value))}
@@ -123,6 +124,7 @@ export const NecessidadesCaloricas = () => {
             label="Estatura (cm)"
             type="number"
             min={0}
+            step="any"
             placeholder="Digite a estatura"
             value={estatura}
             onChange={(e) =>
