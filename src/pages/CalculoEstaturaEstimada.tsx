@@ -11,12 +11,15 @@ const formatEstatura = (value: number) =>
 const parseNonNegativeNumber = (value: string) =>
   Math.max(parseFloat(value.replace(",", ".")) || 0, 0);
 
+const isDecimalInput = (value: string) => /^\d*([,.]\d*)?$/.test(value);
+
 export const CalculoEstaturaEstimada =() => {
   const [isNeuropata, setIsNeuropata] = useState(false);
   const [estatura, setEstatura] = useState<number | null>(null);
-  const [aj, setAj] = useState<number>(0);
+  const [ajInput, setAjInput] = useState("");
   const [idade, setIdade] = useState<number>(0);
   const [sexo, setSexo] = useState<string>("masculino");
+  const aj = parseNonNegativeNumber(ajInput);
 
   const EDefault = (aj: number) => {
     return 2.69 * aj + 24.2;
@@ -60,12 +63,13 @@ export const CalculoEstaturaEstimada =() => {
         </h1>
         <Input
           label="AJ (em centímetros)"
-          type="number"
-          min={0}
-          step="any"
+          type="text"
+          inputMode="decimal"
           placeholder="Digite o valor de AJ"
-          value={aj}
-          onChange={(e) => setAj(parseNonNegativeNumber(e.target.value))}
+          value={ajInput}
+          onChange={(e) => {
+            if (isDecimalInput(e.target.value)) setAjInput(e.target.value);
+          }}
         />
         <Input
           label="Paciente neuropata"

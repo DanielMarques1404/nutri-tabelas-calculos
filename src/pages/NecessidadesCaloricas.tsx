@@ -15,6 +15,8 @@ type FormulaCriticamenteDoente = "fao-oms" | "schofield";
 const parseNonNegativeNumber = (value: string) =>
   Math.max(parseFloat(value.replace(",", ".")) || 0, 0);
 
+const isDecimalInput = (value: string) => /^\d*([,.]\d*)?$/.test(value);
+
 const formatNecessidadeCalorica = (value: number) =>
   value.toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
@@ -22,8 +24,8 @@ const formatNecessidadeCalorica = (value: number) =>
   });
 
 export const NecessidadesCaloricas = () => {
-  const [peso, setPeso] = useState<number>(0);
-  const [estatura, setEstatura] = useState<number>(0);
+  const [pesoInput, setPesoInput] = useState("");
+  const [estaturaInput, setEstaturaInput] = useState("");
   const [sexo, setSexo] = useState<Sexo>("masculino");
   const [faixaEtaria, setFaixaEtaria] = useState<number | null>(null);
   const [tipoRecomendacao, setTipoRecomendacao] =
@@ -39,6 +41,8 @@ export const NecessidadesCaloricas = () => {
         : schofieldCriticamenteDoentesRecomendacoes;
   const recomendacao =
     faixaEtaria === null ? undefined : recomendacoes[faixaEtaria];
+  const peso = parseNonNegativeNumber(pesoInput);
+  const estatura = parseNonNegativeNumber(estaturaInput);
   const necessidadeCalorica =
     recomendacao?.recomendacao(peso, sexo, estatura) ?? 0;
   const usaSchofield =
@@ -111,25 +115,27 @@ export const NecessidadesCaloricas = () => {
 
         <Input
           label="Peso (kg)"
-          type="number"
-          min={0}
-          step="any"
+          type="text"
+          inputMode="decimal"
           placeholder="Digite o peso"
-          value={peso}
-          onChange={(e) => setPeso(parseNonNegativeNumber(e.target.value))}
+          value={pesoInput}
+          onChange={(e) => {
+            if (isDecimalInput(e.target.value)) setPesoInput(e.target.value);
+          }}
         />
 
         {usaSchofield && (
           <Input
             label="Estatura (cm)"
-            type="number"
-            min={0}
-            step="any"
+            type="text"
+            inputMode="decimal"
             placeholder="Digite a estatura"
-            value={estatura}
-            onChange={(e) =>
-              setEstatura(parseNonNegativeNumber(e.target.value))
-            }
+            value={estaturaInput}
+            onChange={(e) => {
+              if (isDecimalInput(e.target.value)) {
+                setEstaturaInput(e.target.value);
+              }
+            }}
           />
         )}
 
